@@ -1,25 +1,24 @@
 import { Flex, HStack, Text, VStack } from '@chakra-ui/react';
 import { Image } from '@chakra-ui/react';
+import { TwitterUser } from '@src/types';
 
 interface Props {
   reverse?: boolean;
-  user?: {
-    username?: string;
-    profile_image_url?: string;
-    name?: string;
-    followers_count?: number;
-    following_count?: number;
-  }
+  user?: TwitterUser;
 }
 
 export const TwitterUserCard = ({ reverse, user }: Props): JSX.Element => {
-  const { username, profile_image_url, name, followers_count, following_count } = user || {};
+  const { username, profile_image_url, name, public_metrics } = user || {};
+  const { followers_count, following_count } = public_metrics || {};
+  if (!user) {
+    return <></>;
+  }
 
   return (
     <Flex
       p={1}
       w={'100%'}
-      bg={'gray.100'}
+      bg={!reverse ? 'gray.100' : 'red.100'}
       alignItems={'center'}
       justifyContent={'space-between'}
       flexDirection={!!reverse ? 'row-reverse' : 'row'}

@@ -5,7 +5,8 @@ import { TwitterLogin } from '../components/TwitterLogin'
 function MyApp({ Component,
   pageProps: {
     session,
-    ...pageProps },
+    ...pageProps
+  },
 }: any) {
 
   return (
