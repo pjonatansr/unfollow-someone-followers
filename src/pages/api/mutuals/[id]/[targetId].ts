@@ -10,17 +10,49 @@ export default async function targetHandler(
   res: NextApiResponse<Data>
 ) {
   const { id, targetId } = req.query;
-  const { 'access-token': accessToken } = req.headers;
-  const bearerToken = accessToken as string;
   const twitterClient = await getTwitterClient();
 
   //TODO: treat cases following more than 1000 users
-  // const followersUser = await twitterClient.v2.following(id as string, { max_results: 1000 });
-  // const followersTarget = await twitterClient.v2.followers(targetId as string, { max_results: 1000 });
+  const following = await getUserFollowing(twitterClient, id as string);
+  const followers = await getUserFollowers(twitterClient, targetId as string);
+
+  const mutuals = following.filter((user: any) => followers.some((follower: any) => follower.id === user.id));
 
   res.status(200).json({
-    mutuals: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    mutuals
   })
 }
 
+async function getUserFollowing(twitterClient: any, id: string, next_token: string = ''): Promise<any[]> {
+  const result: any[] = [];
+  const { data, meta } = await twitterClient.v2.following(id, { max_results: 1000, next_token: next_token || null });
+  result.push(...data);
 
+  try {
+    if (!!meta?.next_token) {
+      const nextResult = await getUserFollowing(twitterClient, id, meta.next_token);
+      result.push(...nextResult);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  return result;
+}
+
+async function getUserFollowers(twitterClient: any, id: string, next_token: string = ''): Promise<any[]> {
+  const result: any[] = [];
+  const { data, meta } = await twitterClient.v2.followers(id, { max_results: 1000, next_token: next_token || null });
+  result.push(...data);
+
+  try {
+    if (!!meta?.next_token) {
+      const nextResult = await getUserFollowers(twitterClient, id, meta.next_token);
+      result.push(...nextResult);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  return result;
+}
