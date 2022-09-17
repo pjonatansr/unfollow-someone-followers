@@ -15,7 +15,6 @@ interface Props {
 
 const UnfollowPage: NextPage<Props> = ({ userData }: Props) => {
   const [targetData, setTargetData] = useState<TwitterUser>({} as TwitterUser);
-
   if (!userData) return (<HomeWithoutAuth></HomeWithoutAuth>);
   const { id } = userData as TwitterUser;
 

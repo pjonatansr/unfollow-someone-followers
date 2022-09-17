@@ -18,7 +18,22 @@ export const Mutuals = ({ userId, targetId }: Props) => {
   const [mutuals, setMutuals] = useState<any[]>([]);
   const [selectedMutuals, setSelectedMutuals] = useState<Record<string, Mutual>>({});
   const { data: session } = useSession();
+  function toggleMutuals(mutual: Mutual) {
+    const { id } = mutual;
 
+    return (e: any) => {
+      const { checked } = e.target;
+      if (!checked) {
+        setSelectedMutuals({
+          ...selectedMutuals,
+          [id]: mutual
+        });
+      } else {
+        const { [id]: _, ...rest } = selectedMutuals;
+        setSelectedMutuals(rest);
+      }
+    };
+  };
   useEffect(() => {
     if (!userId) return;
     if (!targetId) return;
@@ -59,33 +74,20 @@ export const Mutuals = ({ userId, targetId }: Props) => {
           w={'100%'}
           flexWrap={'wrap'}
           gap={2}
-          justifyContent={'space-between'}
+          justifyContent={'center'}
         >
           {!!mutuals.length && mutuals.map((mutual: Mutual) => {
             const { id, username } = mutual;
             return (
               <Box
+                w={'8em'}
                 key={id}
               >
-                <Flex
-                  justifyContent={'flex-start'}
-                >
                   <Checkbox
                     key={username + id}
                     defaultChecked
                     colorScheme='twitter'
-                    onChange={(e) => {
-                      const { checked } = e.target;
-                      if (!checked) {
-                        setSelectedMutuals({
-                          ...selectedMutuals,
-                          [id]: mutual
-                        })
-                      } else {
-                        const { [id]: _, ...rest } = selectedMutuals;
-                        setSelectedMutuals(rest);
-                      }
-                    }}
+                  onChange={toggleMutuals(mutual)}
                   >
                     <Tag
                       size={'sm'}
@@ -94,18 +96,19 @@ export const Mutuals = ({ userId, targetId }: Props) => {
                       colorScheme='twitter'
                     >
                       <TagLabel>
-                        <Link
-                          isExternal
-                          href={`https://twitter.com/${username}`}
+                      <Link
+                        isExternal
+                        href={`https://twitter.com/${username}`}
                         >
-                          @{username}
+                        @{username}
                         </Link>
                       </TagLabel>
                     </Tag>
-                  </Checkbox>
-                </Flex>
+                </Checkbox>
               </Box>
             );
+
+
           })}
         </Flex>
       </CheckboxGroup>

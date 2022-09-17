@@ -82,7 +82,7 @@ export default NextAuth({
           expires_at: number;
         };
 
-        const accessTokenExpires = Date.now() + expires_at * 1000;
+        const accessTokenExpires = expires_at * 1000;
 
         return {
           username,
