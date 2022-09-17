@@ -28,6 +28,7 @@ const UnfollowPage: NextPage<Props> = ({ userData }: Props) => {
       <VStack
         alignItems={'flex-start'}
         p={[0, 1, 2, 3]}
+        w={'100%'}
       >
         <TwitterUserCard user={userData} />
         <TargetSearch targetUsername={targetData.username} setTargetData={setTargetData} />

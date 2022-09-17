@@ -1,4 +1,4 @@
-import { Button, Box, HStack } from "@chakra-ui/react";
+import { Button, Box, HStack, Input, Tag, TagCloseButton, TagLabel, Grid, GridItem, Switch, FormControl, FormHelperText, FormLabel, CheckboxGroup, Checkbox, Link, VStack, Stack, Flex } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -16,6 +16,7 @@ interface Props {
 export const Mutuals = ({ userId, targetId }: Props) => {
   const [loading, setLoading] = useState(false);
   const [mutuals, setMutuals] = useState<any[]>([]);
+  const [selectedMutuals, setSelectedMutuals] = useState<Record<string, Mutual>>({});
   const { data: session } = useSession();
 
   useEffect(() => {
@@ -40,27 +41,76 @@ export const Mutuals = ({ userId, targetId }: Props) => {
   }, [loading, session?.access_token, targetId, userId]);
 
   return (
-    <HStack
+    <VStack
       w={'100%'}
-      justifyContent={'center'}
     >
       <Button
-        colorScheme={'red'}
+        colorScheme={'twitter'}
+        variant={'outline'}
         onClick={async () => {
           setLoading(true);
         }}
       >
-        List Mutuals {Number(mutuals.length)}
+        List Mutuals
       </Button>
-      {!!mutuals.length && mutuals.map(({ id, name, username }:Mutual) => {
-        return (
-          <Box
-            bg={'gray.100'}
-            key={id}>
-            {name}, {username}
-          </Box>
-        );
-      })}
-    </HStack>
+
+      <CheckboxGroup>
+        <Flex
+          w={'100%'}
+          flexWrap={'wrap'}
+          gap={2}
+          justifyContent={'space-between'}
+        >
+          {!!mutuals.length && mutuals.map((mutual: Mutual) => {
+            const { id, username } = mutual;
+            return (
+              <Box
+                key={id}
+              >
+                <Flex
+                  justifyContent={'flex-start'}
+                >
+                  <Checkbox
+                    key={username + id}
+                    defaultChecked
+                    colorScheme='twitter'
+                    onChange={(e) => {
+                      const { checked } = e.target;
+                      if (!checked) {
+                        setSelectedMutuals({
+                          ...selectedMutuals,
+                          [id]: mutual
+                        })
+                      } else {
+                        const { [id]: _, ...rest } = selectedMutuals;
+                        setSelectedMutuals(rest);
+                      }
+                    }}
+                  >
+                    <Tag
+                      size={'sm'}
+                      borderRadius='full'
+                      variant='subtle'
+                      colorScheme='twitter'
+                    >
+                      <TagLabel>
+                        <Link
+                          isExternal
+                          href={`https://twitter.com/${username}`}
+                        >
+                          @{username}
+                        </Link>
+                      </TagLabel>
+                    </Tag>
+                  </Checkbox>
+                </Flex>
+              </Box>
+            );
+          })}
+        </Flex>
+      </CheckboxGroup>
+
+
+    </VStack>
   );
 }
