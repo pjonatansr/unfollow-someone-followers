@@ -10,12 +10,10 @@ interface Props {
 export const TwitterUserCard = ({ reverse, user }: Props): JSX.Element => {
   const { username, profile_image_url, name, public_metrics } = user || {};
   const { followers_count, following_count } = public_metrics || {};
-  if (!user) {
-    return <></>;
-  }
 
   return (
     <Flex
+      filter={!user?.id ? 'blur(4px)' : 'none'}
       p={1}
       w={'100%'}
       bg={!reverse ? 'gray.100' : 'red.100'}
