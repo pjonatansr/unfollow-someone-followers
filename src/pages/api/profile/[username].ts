@@ -15,7 +15,8 @@ const userProfileHandler = async (
     }).catch((error) => {
       console.error(error);
       res.status(500).json({
-        error: "Oops! Something went wrong."
+        error: "Oops! Something went wrong.",
+        stack: error
       })
     })
 }

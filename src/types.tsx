@@ -12,5 +12,6 @@ export interface TwitterUser {
 }
 
 export interface Error {
-  error: any
+  error: any,
+  stack: any,
 }
