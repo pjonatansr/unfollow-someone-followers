@@ -1,11 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { resizeTwitterProfileImage } from '../../../../resizeTwitterProfileImage';
-import { userProfile } from '../../../../modules/userProfile';
 import getTwitterClient from '../../../../getTwitterClient';
 
 type Data = {
-  followersUser: any;
-  followersTarget: any;
+  mutuals: any[];
 }
 
 export default async function targetHandler(
@@ -22,8 +19,7 @@ export default async function targetHandler(
   // const followersTarget = await twitterClient.v2.followers(targetId as string, { max_results: 1000 });
 
   res.status(200).json({
-    followersUser: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    followersTarget: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    mutuals: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   })
 }
 

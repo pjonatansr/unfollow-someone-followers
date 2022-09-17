@@ -28,10 +28,5 @@ export const HomeWithoutAuth = (): JSX.Element => {
     <Text>
       We don&apos; t need them. Take the first step to unfollow who we don&apos;t want to support.
     </Text>
-    <Box>
-      <SessionProvider>
-        <TwitterLogin />
-      </SessionProvider>
-    </Box>
   </VStack>
 }

@@ -1,7 +1,5 @@
-import { InputGroup, InputLeftElement, Input, InputRightElement, Button, FormControl, FormHelperText, FormLabel } from "@chakra-ui/react";
+import { InputGroup, InputLeftElement, Input, InputRightElement, Button } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import Router from 'next/router';
-import { useDebouncedCallback } from "use-debounce";
 import { TwitterUser } from "@src/types";
 
 interface Props {
@@ -13,7 +11,6 @@ export const TargetSearch = (props: Props) => {
   const { targetUsername: username, setTargetData } = props;
   const [targetUsername, setTargetUsername] = useState(username);
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     if (!targetUsername) return;
@@ -28,7 +25,7 @@ export const TargetSearch = (props: Props) => {
         setLoading(false);
       })
       .catch((error) => {
-        console.log({ error })
+        console.error({ error })
       })
 
   }, [loading, targetUsername, setTargetData]);
@@ -44,9 +41,6 @@ export const TargetSearch = (props: Props) => {
     window.addEventListener('keydown', handleEnter);
     return () => window.removeEventListener('keydown', handleEnter);
   }, [targetUsername, setLoading]);
-
-
-
 
   return (
     <InputGroup

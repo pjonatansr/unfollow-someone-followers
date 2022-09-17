@@ -2,8 +2,7 @@ import NextAuth, { Account, Profile, User } from 'next-auth';
 import TwitterProvider from 'next-auth/providers/twitter';
 import { config } from '../../../config';
 import { JWT } from 'next-auth/jwt';
-import { ControlBox } from '@chakra-ui/react';
-import { signIn } from 'next-auth/react';
+import axios, { AxiosResponse } from 'axios';
 
 export type JWTToken = JWT & {
   refresh_token?: string;
@@ -32,40 +31,39 @@ async function refreshAccessToken(token: JWTToken) {
       `${config.TWITTER_CLIENT_ID}:${config.TWITTER_CLIENT_SECRET}`,
     ).toString('base64');
 
-    const response = await fetch(url, {
-      method: 'POST',
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token,
-        client_id: config.TWITTER_CLIENT_ID,
-      }),
+    const data = new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token,
+      client_id: config.TWITTER_CLIENT_ID,
+    });
+
+    const response: AxiosResponse = await axios.post(url, data, {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
 
-    console.log({ a: { ...config } })
+    const refreshedTokens: any = await response.data;
 
-    const refreshedTokens = await response.json();
-
-    if (!response.ok) {
+    if (response.status !== 200) {
       throw refreshedTokens;
     }
 
-    return {
+    const a = {
       ...token,
       access_token: refreshedTokens.access_token,
       refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
       accessTokenExpires: Date.now() + (refreshedTokens.expires_in ?? 0) * 1000,
-      error: '',
     };
+
+    return a;
   } catch (errorData) {
     console.error({ error: errorData });
 
     return {
       ...token,
-      error: '',
+      error: 'RefreshAccessTokenError',
     };
   }
 }
@@ -85,10 +83,9 @@ export default NextAuth({
           expires_at: number;
         };
 
-        const accessTokenExpires = 1000;
+        const accessTokenExpires = Date.now() + expires_at * 1000;
 
         return {
-          ...token,
           username,
           access_token,
           refresh_token,
@@ -100,7 +97,8 @@ export default NextAuth({
         return token;
       }
 
-      return await refreshAccessToken(token);
+      return refreshAccessToken(token);
+
     },
   },
   providers: [

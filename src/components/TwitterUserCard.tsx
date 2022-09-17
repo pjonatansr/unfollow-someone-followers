@@ -27,6 +27,7 @@ export const TwitterUserCard = ({ reverse, user }: Props): JSX.Element => {
         src={profile_image_url || '/avatar.webp'}
         alt="logo"
         h={'15vh'}
+        w={'15vh'}
         borderRadius={'full'}
       />
       <VStack
