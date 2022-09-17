@@ -13,15 +13,13 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "axios": "^0.27.2",
-    "dotenv": "^16.0.2",
     "framer-motion": "^6",
     "next": "^12.3.0",
     "next-auth": "^4.10.3",
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "twitter-api-sdk": "^1.1.0",
-    "twitter-api-v2": "^1.12.7",
-    "use-debounce": "^8.0.4"
+    "twitter-api-v2": "^1.12.7"
   },
   "devDependencies": {
     "@types/node": "18.7.18",
