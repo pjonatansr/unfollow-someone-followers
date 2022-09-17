@@ -53,7 +53,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     }
   }
 
-
   const username = session?.username as string;
   const userData: TwitterUser = await getUserData(ctx, username, session)
 

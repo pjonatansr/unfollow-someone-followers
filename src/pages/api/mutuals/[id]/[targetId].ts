@@ -10,11 +10,11 @@ export default async function targetHandler(
   res: NextApiResponse<Data>
 ) {
   const { id, targetId } = req.query;
-  const twitterClient = await getTwitterClient();
+  const { 'access-token': accessToken } = req.headers;
+  const twitterClient = await getTwitterClient(accessToken as string);
 
-  //TODO: treat cases following more than 1000 users
-  const following = await getUserFollowing(twitterClient, id as string);
-  const followers = await getUserFollowers(twitterClient, targetId as string);
+  const following = await getUsers('following')(twitterClient, id as string);
+  const followers = await getUsers('followers')(twitterClient, targetId as string);
 
   const mutuals = following.filter((user: any) => followers.some((follower: any) => follower.id === user.id));
 
@@ -23,36 +23,37 @@ export default async function targetHandler(
   })
 }
 
-async function getUserFollowing(twitterClient: any, id: string, next_token: string = ''): Promise<any[]> {
-  const result: any[] = [];
-  const { data, meta } = await twitterClient.v2.following(id, { max_results: 1000, next_token: next_token || null });
-  result.push(...data);
+const getUsers = (fn: 'following' | 'followers') => {
+  return async (twitterClient: any, id: string, next_token: string = ''): Promise<any[]> => {
+    const result: any[] = [];
 
-  try {
-    if (!!meta?.next_token) {
-      const nextResult = await getUserFollowing(twitterClient, id, meta.next_token);
-      result.push(...nextResult);
+    const config: Partial<{
+      max_results: number;
+      pagination_token: string
+    }> = {
+      max_results: 1000,
+    };
+
+    if (!!next_token) {
+      config.pagination_token = next_token;
     }
-  } catch (error) {
-    console.error(error);
-  }
 
-  return result;
-}
+    const { v2 } = twitterClient
+    const { data, meta } = await v2[fn](id, config);
 
-async function getUserFollowers(twitterClient: any, id: string, next_token: string = ''): Promise<any[]> {
-  const result: any[] = [];
-  const { data, meta } = await twitterClient.v2.followers(id, { max_results: 1000, next_token: next_token || null });
-  result.push(...data);
+    result.push(...data);
 
-  try {
-    if (!!meta?.next_token) {
-      const nextResult = await getUserFollowers(twitterClient, id, meta.next_token);
-      result.push(...nextResult);
+    try {
+      if (!!meta?.next_token) {
+        const endpointFn = getUsers(fn);
+        const nextResult = await endpointFn(twitterClient, id, meta.next_token);
+        result.push(...nextResult);
+      }
+    } catch (error: any) {
+      console.error(error, error?.data?.errors);
     }
-  } catch (error) {
-    console.error(error);
-  }
 
-  return result;
+    return result;
+
+  }
 }
