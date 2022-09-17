@@ -50,14 +50,13 @@ async function refreshAccessToken(token: JWTToken) {
       throw refreshedTokens;
     }
 
-    const a = {
+    return {
       ...token,
       access_token: refreshedTokens.access_token,
       refresh_token: refreshedTokens.refresh_token ?? token.refresh_token,
       accessTokenExpires: Date.now() + (refreshedTokens.expires_in ?? 0) * 1000,
     };
 
-    return a;
   } catch (errorData) {
     console.error({ error: errorData });
 
