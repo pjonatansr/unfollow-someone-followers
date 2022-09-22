@@ -57,8 +57,8 @@ async function refreshAccessToken(token: JWTToken) {
       accessTokenExpires: Date.now() + (refreshedTokens.expires_in ?? 0) * 1000,
     };
 
-  } catch (errorData) {
-    console.error({ error: errorData });
+  } catch (error: any) {
+    console.error({ error });
 
     return {
       ...token,
@@ -70,34 +70,42 @@ async function refreshAccessToken(token: JWTToken) {
 export default NextAuth({
   secret: config.AUTH_SECRET,
   callbacks: {
-    session({ session, token }) {
-      return { ...session, ...token };
+    async session({ session, token }: any) {
+      session.user = token.user;
+      session.access_token = token.access_token;
+      session.error = token.error;
+
+      return Promise.resolve(session);
     },
     async jwt({ token, account = {}, profile, user }: JWTParams) {
-      if (account && user) {
-        const { username } = profile?.data as { username?: string };
-        const { refresh_token, access_token, expires_at } = account as {
-          refresh_token: string;
-          access_token: string;
-          expires_at: number;
-        };
+      if (user) {
+        if (!!Object.keys(account).length) {
+          const tokenUser = {
+            ...user,
+            username: (profile?.data as any)?.username
+          };
+          const { refresh_token, access_token, expires_at } = account as {
+            refresh_token: string;
+            access_token: string;
+            expires_at: number;
+          };
 
-        const accessTokenExpires = expires_at * 1000;
+          const accessTokenExpires = expires_at * 1000;
 
-        return {
-          username,
-          access_token,
-          refresh_token,
-          accessTokenExpires,
-        };
+          return {
+            user: tokenUser,
+            access_token,
+            refresh_token,
+            accessTokenExpires,
+          };
+        }
       }
 
       if (Date.now() < (token.accessTokenExpires as number)) {
         return token;
       }
 
-      return refreshAccessToken(token);
-
+      return await refreshAccessToken(token);
     },
   },
   providers: [

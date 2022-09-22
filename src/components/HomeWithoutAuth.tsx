@@ -1,5 +1,5 @@
-import { VStack, Heading, Image, Text, Box } from "@chakra-ui/react"
-import { SessionProvider, signIn, useSession } from "next-auth/react"
+import { VStack, Heading, Image, Text, Spinner, HStack } from "@chakra-ui/react"
+import { signIn, useSession } from "next-auth/react"
 import { useEffect } from "react";
 import { TwitterLogin } from "./TwitterLogin"
 
@@ -11,6 +11,14 @@ export const HomeWithoutAuth = (): JSX.Element => {
       signIn('twitter');
     }
   }, [session]);
+
+  if (session?.error) {
+    return (
+      <VStack>
+        <Spinner size='xl' />
+      </VStack>
+    );
+  }
 
   return <VStack
     flexDirection={'column'}
@@ -28,5 +36,12 @@ export const HomeWithoutAuth = (): JSX.Element => {
     <Text>
       We don&apos; t need them. Take the first step to unfollow who we don&apos;t want to support.
     </Text>
+    <HStack
+      gap={10}
+      justifyContent={'center'}
+      alignItems={'center'}
+    >
+      <TwitterLogin />
+    </HStack>
   </VStack>
 }

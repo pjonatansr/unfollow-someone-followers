@@ -16,7 +16,8 @@ export const TwitterUserCard = ({ reverse, user }: Props): JSX.Element => {
       filter={!user?.id ? 'blur(4px)' : 'none'}
       p={1}
       w={'100%'}
-      bg={!reverse ? 'gray.100' : 'red.100'}
+      borderRadius={'lg'}
+      bg={!!reverse ? 'red.100' : 'twitter.100'}
       alignItems={'center'}
       justifyContent={'space-between'}
       flexDirection={!!reverse ? 'row-reverse' : 'row'}
@@ -27,6 +28,7 @@ export const TwitterUserCard = ({ reverse, user }: Props): JSX.Element => {
         h={'15vh'}
         w={'15vh'}
         borderRadius={'full'}
+        border={'1px solid white'}
       />
       <VStack
         alignItems={!!reverse ? 'flex-start' : 'flex-end'}

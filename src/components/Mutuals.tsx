@@ -1,4 +1,4 @@
-import { Button, Box, HStack, Input, Tag, TagCloseButton, TagLabel, Grid, GridItem, Switch, FormControl, FormHelperText, FormLabel, CheckboxGroup, Checkbox, Link, VStack, Stack, Flex } from "@chakra-ui/react";
+import { Button, Box, Tag, TagLabel, CheckboxGroup, Checkbox, Link, VStack, Flex, ButtonGroup } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -15,23 +15,24 @@ interface Props {
 
 export const Mutuals = ({ userId, targetId }: Props) => {
   const [loading, setLoading] = useState(false);
-  const [mutuals, setMutuals] = useState<any[]>([]);
-  const [selectedMutuals, setSelectedMutuals] = useState<Record<string, Mutual>>({});
+  const [sendBatch, setSendBatch] = useState(false);
+  const [mutuals, setMutuals] = useState<Mutual[]>([]);
+  const [selectedMutuals, setSelectedMutuals] = useState<Record<string, boolean>>({});
   const { data: session } = useSession();
   function toggleMutuals(mutual: Mutual) {
     const { id } = mutual;
 
-    return (e: any) => {
+    return (e: any): void => {
       const { checked } = e.target;
       if (!checked) {
-        setSelectedMutuals({
+        return setSelectedMutuals({
           ...selectedMutuals,
-          [id]: mutual
+          [id]: true
         });
-      } else {
-        const { [id]: _, ...rest } = selectedMutuals;
-        setSelectedMutuals(rest);
       }
+
+      const { [id]: _, ...rest } = selectedMutuals;
+      setSelectedMutuals(rest);
     };
   };
   useEffect(() => {
@@ -55,25 +56,77 @@ export const Mutuals = ({ userId, targetId }: Props) => {
     setLoading(false);
   }, [loading, session?.access_token, targetId, userId]);
 
+  useEffect(() => {
+    console.log({ session, userId, sendBatch })
+    if (!session?.access_token) return;
+    if (!userId) return;
+    if (!sendBatch) return;
+
+    const sendBatchUnfollow = async (userId: string, ids: string[]) => {
+      fetch(`/api/unfollow/${userId}/mutuals`, {
+        method: 'POST',
+        headers: {
+          'x-access-token': session?.access_token,
+        } as any,
+        body: JSON.stringify({ ids })
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log({ data });
+        })
+        .catch((error) => {
+          console.error({ error })
+          setSendBatch(false)
+        });
+    }
+
+    const unfollowTargets = mutuals
+      .map(({ id }) => id)
+      .filter(id => !selectedMutuals[id]);
+
+    console.log({ unfollowTargets });
+
+    sendBatchUnfollow(userId, unfollowTargets);
+  }, [sendBatch, session?.access_token, userId, selectedMutuals, mutuals, session]);
+
+
   return (
     <VStack
       w={'100%'}
     >
-      <Button
-        colorScheme={'twitter'}
+      <ButtonGroup
         variant={'outline'}
-        onClick={async () => {
-          setLoading(true);
-        }}
+        spacing={4}
       >
-        List Mutuals
-      </Button>
+        <Button
+          colorScheme={'twitter'}
+          onClick={async () => {
+            setLoading(true);
+          }}
+        >
+          Show Mutuals
+        </Button>
+        <Button
+          disabled={!!sendBatch || mutuals.length === Object.keys(selectedMutuals).length}
+          colorScheme={'red'}
+          onClick={async () => {
+            setSendBatch(true);
+          }}
+        >
+          {sendBatch ? 'Wait 15 minutes...' : 'Unfollow Selected'}
+        </Button>
+      </ButtonGroup>
 
       <CheckboxGroup>
         <Flex
-          w={'100%'}
-          flexWrap={'wrap'}
+          p={2}
           gap={2}
+          w={'100%'}
+          border={'1px'}
+          bg={'gray.50'}
+          flexWrap={'wrap'}
+          borderRadius={'md'}
+          borderColor={'gray.200'}
           justifyContent={'center'}
         >
           {!!mutuals.length && mutuals.map((mutual: Mutual) => {
@@ -83,12 +136,12 @@ export const Mutuals = ({ userId, targetId }: Props) => {
                 w={'8em'}
                 key={id}
               >
-                  <Checkbox
-                    key={username + id}
-                    defaultChecked
-                    colorScheme='twitter'
+                <Checkbox
+                  defaultChecked
+                  key={username + id}
+                  colorScheme='twitter'
                   onChange={toggleMutuals(mutual)}
-                  >
+                >
                     <Tag
                       size={'sm'}
                       borderRadius='full'

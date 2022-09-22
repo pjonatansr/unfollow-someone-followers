@@ -5,22 +5,17 @@ type Data = {
   mutuals: any[];
 }
 
-export default async function targetHandler(
+export default async function mutualsHandler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
   const { id, targetId } = req.query;
   const { 'access-token': accessToken } = req.headers;
   const twitterClient = await getTwitterClient(accessToken as string);
-
   const following = await getUsers('following')(twitterClient, id as string);
   const followers = await getUsers('followers')(twitterClient, targetId as string);
-
   const mutuals = following.filter((user: any) => followers.some((follower: any) => follower.id === user.id));
-
-  res.status(200).json({
-    mutuals
-  })
+  res.status(200).json({ mutuals });
 }
 
 const getUsers = (fn: 'following' | 'followers') => {
@@ -50,7 +45,7 @@ const getUsers = (fn: 'following' | 'followers') => {
         result.push(...nextResult);
       }
     } catch (error: any) {
-      console.error(error, error?.data?.errors);
+      console.error({ error, errors: error?.data?.errors });
     }
 
     return result;

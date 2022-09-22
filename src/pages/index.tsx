@@ -1,6 +1,6 @@
-import { Container, VStack } from "@chakra-ui/react"
+import { Container, HStack, VStack } from "@chakra-ui/react"
 import { GetServerSideProps, NextPage } from "next"
-import { getSession } from "next-auth/react"
+import { getSession, useSession } from "next-auth/react"
 import { TwitterUserCard } from "../components/TwitterUserCard"
 import { TargetSearch } from "../components/TargetSearch"
 import { getHttpProtocol } from "../getHttpProtocol"
@@ -8,26 +8,31 @@ import { TwitterUser } from "../types"
 import { useState } from "react"
 import { Mutuals } from "../components/Mutuals"
 import { HomeWithoutAuth } from "@src/components/HomeWithoutAuth"
+import { TwitterLogin } from "@src/components/TwitterLogin"
 
 interface Props {
   userData: TwitterUser,
 }
 
-const UnfollowPage: NextPage<Props> = ({ userData }: Props) => {
+const HomePage: NextPage<Props> = ({ userData }: Props) => {
+  const { data: session }: { data: any } = useSession();
   const [targetData, setTargetData] = useState<TwitterUser>({} as TwitterUser);
-  if (!userData) return (<HomeWithoutAuth></HomeWithoutAuth>);
+
+  if (!session?.user?.id || !userData?.id) return <HomeWithoutAuth></HomeWithoutAuth>
+
   const { id } = userData as TwitterUser;
 
   return (
     <Container
-      w={'100vw'}
       p={0}
-      pb={1}
+      pb={2}
+      pt={2}
+      border={'1px solid #e6ecf0'}
+      minH={'100vh'}
     >
       <VStack
         alignItems={'flex-start'}
         p={[0, 1, 2, 3]}
-        w={'100%'}
       >
         <TwitterUserCard user={userData} />
         <TargetSearch targetUsername={targetData.username} setTargetData={setTargetData} />
@@ -37,23 +42,30 @@ const UnfollowPage: NextPage<Props> = ({ userData }: Props) => {
           targetId={targetData.id}
         />
       </VStack >
+
+      <HStack
+        gap={10}
+        justifyContent={'center'}
+        alignItems={'center'}
+      >
+        <TwitterLogin />
+      </HStack>
     </Container >
   )
 };
 
-export default UnfollowPage
+export default HomePage
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getSession(ctx);
-
+  const session: any = await getSession(ctx);
   if (!session || !!session?.error) {
-
     return {
-      props: {}
+      props: {
+      }
     }
   }
 
-  const username = session?.username as string;
+  const username = session?.user?.username as string;
   const userData: TwitterUser = await getUserData(ctx, username, session)
 
   return {
@@ -78,6 +90,7 @@ async function getUserData(ctx: any, username: string, session: any) {
     .catch((error) => {
       console.log({ error })
     })
+
   return userData;
 }
 

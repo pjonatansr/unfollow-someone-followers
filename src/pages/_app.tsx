@@ -1,6 +1,5 @@
-import { ChakraProvider, HStack } from '@chakra-ui/react'
+import { ChakraProvider } from '@chakra-ui/react'
 import { SessionProvider } from 'next-auth/react'
-import { TwitterLogin } from '../components/TwitterLogin'
 
 function MyApp({ Component,
   pageProps: {
@@ -11,15 +10,11 @@ function MyApp({ Component,
 
   return (
     <ChakraProvider>
-      <SessionProvider session={session}>
+      <SessionProvider
+        refetchInterval={20 * 60}
+        session={session}
+      >
         <Component {...pageProps} />
-        <HStack
-          gap={10}
-          justifyContent={'center'}
-          alignItems={'center'}
-        >
-          <TwitterLogin></TwitterLogin>
-        </HStack>
       </SessionProvider>
     </ChakraProvider>
   )
